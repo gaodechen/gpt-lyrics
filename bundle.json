@@ -1,0 +1,36 @@
+{
+  "plugins": [
+    {
+      "providerId": "andantei",
+      "providerDisplayName": {
+        "zh": "Andantei行板",
+        "en": "Andantei"
+      },
+      "pluginId": "gpt-lyrics",
+      "pluginDisplayName": {
+        "zh": "AI智能作词 (ChatGPT)",
+        "en": "AI Lyric Writer (ChatGPT)"
+      },
+      "pluginDescription": {
+        "zh": "用一段提示词生成歌词",
+        "en": "Generate lyrics given a prompt"
+      },
+      "version": "1.0.0",
+      "supportedPlatforms": ["desktop"],
+      "minRequiredDesktopVersion": "1.8.9",
+      "options": {
+        "allowReset": true,
+        "allowManualApplyAdjust": true
+      },
+      "triggers": [
+        {
+          "type": "context-track-content",
+          "config": {
+            "allowedTrackTypes": ["audio", "midi"]
+          }
+        }
+      ],
+      "categories": ["generate"]
+    }
+  ]
+}
