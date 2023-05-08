@@ -23,7 +23,7 @@ class AIConfig:
       
       self.openai_api_organization_id = os.getenv("OPENAI_API_ORGANIZATION_ID")
       if not self.openai_api_organization_id:
-        raise Exception("ORGANIZATION_ID is not set")
+        raise Exception("OPENAI_API_ORGANIZATION_ID is not set")
       
       self.openai_api_engine = os.getenv("OPENAI_API_ENGINE", DEFAULT_OPENAI_API_ENGINE)
       

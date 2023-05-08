@@ -5,30 +5,30 @@ class BasePrompt():
     For a more specific task, such as lyric writing, we derive a new class from BasePrompt and implement each method within.
     '''
     SUPPORT_LANGUAGES = ["zh", "en"]
-    
+
     def __init__(self, lang):
         self.lang = lang
         if (self.lang not in BasePrompt.SUPPORT_LANGUAGES):
             raise NotImplementedError(
                 "The language {} is not supported.".format(self.lang))
-    
+
     def get_system_prompt(self):
         raise NotImplementedError
-    
+
     def get_assistant_prompt(self):
         raise NotImplementedError
-    
+
     def get_user_prompt(self):
         raise NotImplementedError
-    
+
     def get_chat_prompt(self):
         ''' Prompts to the Chat API'''
         raise NotImplementedError
-    
+
     def get_completion_prompt(self):
         ''' Prompts to the Completion API '''
         raise NotImplementedError
-    
+
 
 class LyricPrompt(BasePrompt):
     '''
@@ -36,6 +36,7 @@ class LyricPrompt(BasePrompt):
     The prompts consist of system, assistant, and user prompts.
     The expected output is a string that begins with the specified [start] token and concludes with the [end] token.
     '''
+
     def __init__(self, lang="en", error_message="[error]"):
         '''
         Args:
@@ -44,7 +45,6 @@ class LyricPrompt(BasePrompt):
         '''
         super().__init__(lang)
         self.error_message = error_message
-        
 
     def get_system_prompt(self):
         ''' Description of the lyric writer '''
@@ -64,11 +64,13 @@ class LyricPrompt(BasePrompt):
                 不要包含任何类似chorus或verse等音乐段落和结构名。\
                 仅输出歌词正文，每句歌词独立成行。\
                 在歌词开始之前输出[start]，歌词结束后输出[end]。\
+                输出歌词语言与客户的要求的语言一致。\
                 若无法生成歌词，请输出{error_message}。",
             "en": "Please write lyrics for a song. Here are additional requirements for the song you need to follow: {user_prompt}. \
             Do not mention or use any music structure names such as intro, chorus, verse.\
             Just write the lines of the lyrics with each line being separate and distinct.\
             Output [start] before the lyrics begin and [end] after the lyrics end.\
+            The output lyrics should be using the same language as the user's additional requirements.\
             If you cannot generate the lyrics, output {error_message}."
         }
         return {

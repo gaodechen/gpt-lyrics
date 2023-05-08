@@ -1,5 +1,4 @@
-from tuneflow_py import TuneflowPlugin, ParamDescriptor, Song, WidgetType, TuneflowPluginTriggerData
-from tuneflow_py import Lyrics
+from tuneflow_py import TuneflowPlugin, ParamDescriptor, Song, Lyrics, WidgetType, TuneflowPluginTriggerData, InjectSource
 
 from typing import Dict, List, Any
 
@@ -65,6 +64,52 @@ class LyricGenerationPlugin(TuneflowPlugin):
                     }
                 }
             },
+            "language": {
+                "displayName": {
+                    "en": "Writing Language",
+                    "zh": "写作语言"
+                },
+                "defaultValue": "auto",
+                "widget": {
+                    "type": WidgetType.Select.value,
+                    "config": {
+                        "placeholder": {
+                            "zh": "样例：有关梦想和希望的流行歌曲",
+                            "en": "e.g. a pop song about dreams and hope"
+                        },
+                        "options": [
+                            {
+                                "label": {
+                                    "en": "Auto",
+                                    "zh": "自动",
+                                },
+                                "value": "auto"
+                            },
+                            {
+                                "label": "English",
+                                "value": "en"
+                            },
+                            {
+                                "label": "中文",
+                                "value": "zh"
+                            }
+                        ]
+                    }
+                }
+            },
+            "userLanguage": {
+                "displayName": {
+                    "en": "User Language",
+                    "zh": "用户语言"
+                },
+                "defaultValue": None,
+                "injectFrom": InjectSource.Language.value,
+                "widget": {
+                    "type": WidgetType.NoWidget.value,
+                },
+                "hidden": True,
+                "optional": True
+            }
         }
 
     @staticmethod
@@ -81,21 +126,26 @@ class LyricGenerationPlugin(TuneflowPlugin):
         # Split the lyrics into lines and remove leading/trailing spaces
         lines = [line.strip() for line in lyrics.split("\n") if line.strip()]
         # Remove lines that contain structure names
-        lines = [line for line in lines if not any(structure in line.lower() for structure in STRUCTURE_NAMES)]
+        lines = [line for line in lines if not any(
+            structure in line.lower() for structure in STRUCTURE_NAMES)]
 
         return lines
 
     @staticmethod
     def run(song: Song, params: Dict[str, Any]):
+        lang = params["language"]
+        user_lang = params["userLanguage"]
+        lang = get_writing_language(lang, user_lang)
+
         trigger: TuneflowPluginTriggerData = params["trigger"]
-        track_id = trigger["entities"][0]["trackId"]
+        track_id = trigger["entities"][0]["trackId"] # type:ignore
         track = song.get_track_by_id(track_id=track_id)
         if track is None:
             raise Exception('Track not found')
-        
+
         api = get_engine_api(
             cfg=AIConfig(),
-            prompt=LyricPrompt(lang=contains_chinese(params["prompt"]) and "zh" or "en")
+            prompt=LyricPrompt(lang=lang)
         )
 
         response = api.generate(
@@ -109,6 +159,8 @@ class LyricGenerationPlugin(TuneflowPlugin):
             track.get_visible_notes(),
             key=lambda note: note.get_start_tick()
         )
+        if len(visible_notes) == 0:
+            return
         melody_start_tick = visible_notes[0].get_start_tick()
         melody_end_tick = visible_notes[-1].get_end_tick()
 

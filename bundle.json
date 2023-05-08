@@ -16,8 +16,6 @@
         "en": "Generate lyrics given a prompt"
       },
       "version": "1.0.0",
-      "supportedPlatforms": ["desktop"],
-      "minRequiredDesktopVersion": "1.8.9",
       "options": {
         "allowReset": true,
         "allowManualApplyAdjust": true
@@ -26,8 +24,89 @@
         {
           "type": "context-track-content",
           "config": {
-            "allowedTrackTypes": ["audio", "midi"]
+            "allowedTrackTypes": ["midi"]
           }
+        }
+      ],
+      "categories": ["generate"]
+    },
+    {
+      "providerId": "andantei",
+      "providerDisplayName": {
+        "zh": "Andantei行板",
+        "en": "Andantei"
+      },
+      "pluginId": "gpt-lyrics-generate",
+      "pluginDisplayName": {
+        "zh": "智能作词家 (生成/续写)",
+        "en": "Smart Lyrics Writer (Generate/Continue)"
+      },
+      "pluginDescription": {
+        "zh": "根据提示词从头开始生成歌词或续写已有歌词",
+        "en": "Generate lyrics or continue existing lyrics from prompts"
+      },
+      "version": "1.0.0",
+      "options": {
+        "allowReset": true,
+        "allowManualApplyAdjust": true
+      },
+      "triggers": [
+        {
+          "type": "lyrics-generate"
+        }
+      ],
+      "categories": ["generate"]
+    },
+    {
+      "providerId": "andantei",
+      "providerDisplayName": {
+        "zh": "Andantei行板",
+        "en": "Andantei"
+      },
+      "pluginId": "gpt-lyrics-structure",
+      "pluginDisplayName": {
+        "zh": "智能作词家 (改写段落)",
+        "en": "Smart Lyrics Writer (Rewrite Paragraph)"
+      },
+      "pluginDescription": {
+        "zh": "根据提示词改写已有歌词段落",
+        "en": "Rewrite an existing lyrics paragraph from prompts"
+      },
+      "version": "1.0.0",
+      "options": {
+        "allowReset": true,
+        "allowManualApplyAdjust": true
+      },
+      "triggers": [
+        {
+          "type": "lyrics-structure"
+        }
+      ],
+      "categories": ["generate"]
+    },
+    {
+      "providerId": "andantei",
+      "providerDisplayName": {
+        "zh": "Andantei行板",
+        "en": "Andantei"
+      },
+      "pluginId": "gpt-lyrics-line",
+      "pluginDisplayName": {
+        "zh": "智能作词家 (改写句子)",
+        "en": "Smart Lyrics Writer (Rewrite Line)"
+      },
+      "pluginDescription": {
+        "zh": "根据提示词改写单句歌词",
+        "en": "Rewrite an existing lyrics line from prompts"
+      },
+      "version": "1.0.0",
+      "options": {
+        "allowReset": true,
+        "allowManualApplyAdjust": true
+      },
+      "triggers": [
+        {
+          "type": "lyrics-line"
         }
       ],
       "categories": ["generate"]
