@@ -6,36 +6,6 @@
         "zh": "Andantei行板",
         "en": "Andantei"
       },
-      "pluginId": "gpt-lyrics",
-      "pluginDisplayName": {
-        "zh": "AI智能作词 (ChatGPT)",
-        "en": "AI Lyric Writer (ChatGPT)"
-      },
-      "pluginDescription": {
-        "zh": "用一段提示词生成歌词",
-        "en": "Generate lyrics given a prompt"
-      },
-      "version": "1.0.0",
-      "options": {
-        "allowReset": true,
-        "allowManualApplyAdjust": true
-      },
-      "triggers": [
-        {
-          "type": "context-track-content",
-          "config": {
-            "allowedTrackTypes": ["midi"]
-          }
-        }
-      ],
-      "categories": ["generate"]
-    },
-    {
-      "providerId": "andantei",
-      "providerDisplayName": {
-        "zh": "Andantei行板",
-        "en": "Andantei"
-      },
       "pluginId": "gpt-lyrics-generate",
       "pluginDisplayName": {
         "zh": "智能作词家 (生成/续写)",
@@ -43,7 +13,7 @@
       },
       "pluginDescription": {
         "zh": "根据提示词从头开始生成歌词或续写已有歌词",
-        "en": "Generate lyrics or continue existing lyrics from prompts"
+        "en": "Generate lyrics from scratch or continue existing lyrics from prompts"
       },
       "version": "1.0.0",
       "options": {
@@ -53,6 +23,12 @@
       "triggers": [
         {
           "type": "lyrics-generate"
+        },
+        {
+          "type": "context-track-content",
+          "config": {
+            "allowedTrackTypes": ["midi"]
+          }
         }
       ],
       "categories": ["generate"]

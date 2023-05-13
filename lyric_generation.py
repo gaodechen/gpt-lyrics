@@ -1,25 +1,26 @@
 from tuneflow_py import TuneflowPlugin, ParamDescriptor, Song, Lyrics, WidgetType, TuneflowPluginTriggerData, InjectSource
 
-from typing import Dict, List, Any
+import math
+from typing import Dict, Any
 
 from ai_config import AIConfig
 from ai_api import get_engine_api
 from ai_prompt import LyricPrompt
-from utils import *
-
-STRUCTURE_NAMES = ['chorus', 'verse', 'intro', 'bridge', 'outro']
-# TODO: use dynamic word duration
-DEFAULT_WORD_TICKS = 170
+from utils import DEFAULT_WORD_TICKS
+from utils import get_writing_language, split_lyrics
 
 
-class LyricGenerationPlugin(TuneflowPlugin):
+class LyricsGenerationPlugin(TuneflowPlugin):
+    '''
+    Write lyrics from scratch or continue writing based on the lyric context
+    '''
     @staticmethod
     def provider_id() -> str:
         return 'andantei'
 
     @staticmethod
     def plugin_id() -> str:
-        return 'gpt-lyrics'
+        return 'gpt-lyrics-generate'
 
     @staticmethod
     def params(song: Song) -> Dict[str, ParamDescriptor]:
@@ -61,6 +62,25 @@ class LyricGenerationPlugin(TuneflowPlugin):
                         "minValue": 0.0,
                         "maxValue": 1.0,
                         "step": 0.05
+                    }
+                }
+            },
+            "numLines": {
+                "displayName": {
+                    "en": "Max Nubmer of Lines",
+                    "zh": "最大乐句数量"
+                },
+                "defaultValue": 4,
+                "description": {
+                    "en": "The max number of lines to generate or continue writing",
+                    "zh": "生成或续写的最大乐句数量"
+                },
+                "widget": {
+                    "type": WidgetType.Input.value,
+                    "config": {
+                        "minValue": 1,
+                        "maxValue": 64,
+                        "step": 1,
                     }
                 }
             },
@@ -109,68 +129,88 @@ class LyricGenerationPlugin(TuneflowPlugin):
                 },
                 "hidden": True,
                 "optional": True
+            },
+            "empty": {
+                "displayName": {
+                    "en": "Empty Current Lyrics",
+                    "zh": "清空当前歌词"
+                },
+                "description": {
+                    "en": "Whether to empty the current lyrics before generating",
+                    "zh": "是否在生成新歌词前清空当前已有歌词"
+                },
+                "defaultValue": False,
+                "widget": {
+                    "type": WidgetType.Switch.value,
+                },
             }
         }
-
-    @staticmethod
-    def split_lyrics(lyrics: str) -> List[str]:
-        '''
-        Post-process the API responses, splitting them into individual lines.
-        The output may include structural labels and non-lyrical content,
-        which should be removed to ensure only the desired lyrics are retained.
-        '''
-        start_index = lyrics.find("[start]")
-        end_index = lyrics.find("[end]")
-        lyrics = lyrics[start_index + len("[start]"):end_index]
-
-        # Split the lyrics into lines and remove leading/trailing spaces
-        lines = [line.strip() for line in lyrics.split("\n") if line.strip()]
-        # Remove lines that contain structure names
-        lines = [line for line in lines if not any(
-            structure in line.lower() for structure in STRUCTURE_NAMES)]
-
-        return lines
 
     @staticmethod
     def run(song: Song, params: Dict[str, Any]):
         lang = params["language"]
         user_lang = params["userLanguage"]
+        num_lines = params["numLines"]
+        empty = params["empty"]
         lang = get_writing_language(lang, user_lang)
-
+        
         trigger: TuneflowPluginTriggerData = params["trigger"]
-        track_id = trigger["entities"][0]["trackId"] # type:ignore
-        track = song.get_track_by_id(track_id=track_id)
-        if track is None:
-            raise Exception('Track not found')
+        
+        lyrics = Lyrics(song)
+        if empty:
+            lyrics.clear()
+        # Whether to continue writing rather than generate from scratch
+        from_scratch = len(lyrics) == 0
+            
+        start_tick: int = 0
+        end_tick: int = math.inf
+        
+        if trigger["type"] == "lyrics-generate":
+            # Triggered by the global lyric editor
+            # Continue from the last line or generate from scratch
+            start_tick = 0 if from_scratch else lyrics[len(lyrics)-1].get_start_tick()
+        elif trigger["type"] == "context-track-content":
+            # Triggered on a MIDI track
+            track_id = trigger["entities"][0]["trackId"]
+            track = song.get_track_by_id(track_id=track_id)
+            if track is None:
+                raise Exception('Track not found')
+            visible_notes = sorted(
+                track.get_visible_notes(),
+                key=lambda note: note.get_start_tick()
+            )
+            if len(visible_notes) == 0:
+                return
+            # Lyrics are generated within the range of visible notes
+            start_tick = visible_notes[0].get_start_tick()
+            end_tick = visible_notes[-1].get_end_tick()
+            if from_scratch:
+                # Continue writing from the last line within visible notes if there is one
+                start_tick = max(lyrics[len(lyrics)-1].get_start_tick(), start_tick)
+        else:
+            raise Exception('Trigger type not supported')
 
+        # Generate lyrics through OpenAI APIs
         api = get_engine_api(
             cfg=AIConfig(),
             prompt=LyricPrompt(lang=lang)
         )
-
+        
+        lyric_contents = '\n'.join([line.get_sentence() for line in lyrics])
         response = api.generate(
             user_demands=params["prompt"],
             temperature=params["temperature"],
+            context_before=lyric_contents,
+            num_lines=num_lines,
         )
 
-        lines = LyricGenerationPlugin.split_lyrics(response)
-
-        visible_notes = sorted(
-            track.get_visible_notes(),
-            key=lambda note: note.get_start_tick()
-        )
-        if len(visible_notes) == 0:
-            return
-        melody_start_tick = visible_notes[0].get_start_tick()
-        melody_end_tick = visible_notes[-1].get_end_tick()
-
-        lyrics = Lyrics(song)
-        lyrics.clear()
-
-        line_start_offset = melody_start_tick
-        for line in lines:
+        # Parse the response and arrange lyric lines
+        lines = split_lyrics(response)
+        
+        line_start_offset = start_tick
+        for i, line in enumerate(lines):
             line_duration = DEFAULT_WORD_TICKS * len(line)
-            if line_start_offset + line_duration > melody_end_tick:
+            if i > num_lines or line_start_offset + line_duration > end_tick:
                 break
             lyrics.create_line_from_string(
                 line, line_start_offset, line_start_offset + line_duration)

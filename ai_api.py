@@ -30,21 +30,11 @@ class BaseAPI:
         ''' Generate engine-specific prompts that consist of system, assistant, and user prompts. '''
         raise NotImplementedError
 
-    def generate(self, user_demands: str, temperature: float = 0.5) -> str:
+    def generate(self) -> str:
         '''
-        Generate text based on a given prompt and temperature.
-
-        Args:
-            prompt (str): The prompt to generate text from. 
-            temperature (float): A value controlling the randomness and creativity of the generated text.
-
-        Returns:
-            str: The generated text.
+        Generate text based on given parameters (such as prompts, temperature, etc.)
         '''
-        if not isinstance(user_demands, str) or not user_demands or not user_demands.strip():
-            raise ValueError(f"Invalid prompt: {user_demands}")
-        if temperature < 0 or temperature > 1:
-            raise ValueError(f"Invalid temperature: {temperature}")
+        raise NotImplementedError
 
 
 class TextDavinci(BaseAPI):
@@ -55,12 +45,13 @@ class TextDavinci(BaseAPI):
         prompt (str): The text prompt to generate a completion for.
         temperature (float): Controls the "creativity" of the generated text. 
             Higher values result in more varied and unpredictable completions.
+        **kwargs: Additional keyword arguments to pass to the specific prompt generator.
 
     Returns:
         str: The generated text completion as a string.
     '''
-    def _get_prompts(self, user_demands) -> str:
-        return self.prompt.get_completion_prompt(user_demands)
+    def _get_prompts(self, user_demands: str, **kwargs) -> str:
+        return self.prompt.get_completion_prompt(user_demands, **kwargs)
 
     def _get_content(self, response) -> str:
         if not response or not hasattr(response, "choices") or not response.choices:
@@ -72,12 +63,12 @@ class TextDavinci(BaseAPI):
             raise TypeError(f"Invalid response of type {type(text)} and value {text}")
         return text.strip()
 
-    def generate(self, user_demands: str, temperature: float) -> str:
-        super().generate(user_demands, temperature)
-        
+    def generate(self, user_demands: str, temperature: float, **kwargs) -> str:
+        if temperature < 0 or temperature > 1:
+            raise ValueError(f"Invalid temperature value: {temperature}")
         response = openai.Completion.create(
             engine=self.engine,
-            prompt=self._get_prompts(user_demands),
+            prompt=self._get_prompts(user_demands, **kwargs),
             max_tokens=self.max_tokens,
             temperature=temperature,
         )
@@ -92,12 +83,13 @@ class ChatGPT(BaseAPI):
         prompt (str): The text prompt to generate a completion for.
         temperature (float): Controls the "creativity" of the generated text. 
             Higher values result in more varied and unpredictable completions.
+        **kwargs: Additional keyword arguments to pass to the specific prompt generator.
 
     Returns:
         str: The generated text completion as a string.
     '''
-    def _get_prompts(self, user_demands) -> str:
-        return self.prompt.get_chat_prompt(user_demands)
+    def _get_prompts(self, user_demands: str, **kwargs) -> str:
+        return self.prompt.get_chat_prompt(user_demands, **kwargs)
     
     def _get_content(self, response) -> str:
         if not response or not hasattr(response, "choices") or not response.choices:
@@ -109,12 +101,12 @@ class ChatGPT(BaseAPI):
             raise TypeError(f"Invalid response of type {type(text)} and value {text}")
         return text.strip()
 
-    def generate(self, user_demands: str, temperature: float) -> str:
-        super().generate(user_demands, temperature)
-        
+    def generate(self, user_demands: str, temperature: float, **kwargs) -> str:
+        if temperature < 0 or temperature > 1:
+            raise ValueError(f"Invalid temperature value: {temperature}")
         response = openai.ChatCompletion.create(
             model=self.engine,
-            messages=self._get_prompts(user_demands),
+            messages=self._get_prompts(user_demands, **kwargs),
             max_tokens=self.max_tokens,
             temperature=temperature,
         )
