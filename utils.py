@@ -1,4 +1,5 @@
 from typing import List
+import re
 
 def contains_chinese(text):
     '''
@@ -25,7 +26,8 @@ def get_writing_language(selected_lang: str, user_lang: str):
 
 STRUCTURE_NAMES = ['chorus', 'verse', 'intro', 'bridge', 'outro']
 # TODO: use dynamic word duration
-DEFAULT_WORD_TICKS = 170
+DEFAULT_WORD_TICKS = 200
+DEFAULT_LINE_TICKS = 2000
 
 
 def split_lyrics(lyrics: str) -> List[str]:
@@ -37,9 +39,11 @@ def split_lyrics(lyrics: str) -> List[str]:
     start_index = lyrics.lower().find("[start]")
     end_index = lyrics.lower().find("[end]")
     lyrics = lyrics[start_index + len("[start]"):end_index]
-
+    
+    pattern = r'[\n,.,!,?，。！？]'
     # Split the lyrics into lines and remove leading/trailing spaces
-    lines = [line.strip() for line in lyrics.split("\n") if line.strip()]
+    lines = [line.strip() for line in re.split(pattern, lyrics) if line.strip()]
+    
     # Remove lines that contain structure names
     lines = [line for line in lines if not any(
         structure in line.lower() for structure in STRUCTURE_NAMES)]

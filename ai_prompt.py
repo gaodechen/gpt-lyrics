@@ -67,7 +67,7 @@ class LyricPrompt(BasePrompt):
                 "(R) 使用中文创作歌词。",
                 "(R) 不要包含任何音乐段落和结构名，例如chorus或verse",
                 "(R) 仅输出新生成歌词的正文，每句歌词独立成行。",
-                "(R) 在歌词开始之前输出[start]，歌词结束后输出[end]。",
+                "(R) 在新生成的歌词开始之前输出[start]，歌词结束后输出[end]。其中不要包含之前已有的歌词上下文。",
                 "(R) 若无法生成歌词，请输出{error_message}。"
                 "(R) 歌词行数在{num_lines}行左右。"
             ],
@@ -77,7 +77,7 @@ class LyricPrompt(BasePrompt):
                 "(R) Write lyrics in English.",
                 "(R) Do not mention or use any music structure names such as intro, chorus, verse.",
                 "(R) Just write the generated lines with each line being separate and distinct.",
-                "(R) Output [start] before the lyrics begin and [end] after the lyrics end.",
+                "(R) Output [start] before the newly generated lyrics begin and [end] after the lyrics end. Do not include previous lyrics if there are any.",
                 "(R) If you cannot generate the lyrics, output {error_message}."
                 "(R) Please provide around {num_lines} lines of new lyrics."
             ]

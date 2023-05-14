@@ -67,16 +67,16 @@ class LyricsGenerationPlugin(TuneflowPlugin):
             },
             "numLines": {
                 "displayName": {
-                    "en": "Max Nubmer of Lines",
-                    "zh": "最大乐句数量"
+                    "en": "Esimated Nubmer of Lines",
+                    "zh": "预计乐句数量"
                 },
                 "defaultValue": 4,
                 "description": {
-                    "en": "The max number of lines to generate or continue writing",
-                    "zh": "生成或续写的最大乐句数量"
+                    "en": "The estimated of lines to generate or continue writing",
+                    "zh": "生成或续写乐句的大致数量"
                 },
                 "widget": {
-                    "type": WidgetType.Input.value,
+                    "type": WidgetType.Slider.value,
                     "config": {
                         "minValue": 1,
                         "maxValue": 64,
