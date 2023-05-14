@@ -20,6 +20,28 @@ class LyricStructureCompletionPlugin(TuneflowPlugin):
     @staticmethod
     def params(song: Song) -> Dict[str, ParamDescriptor]:
         return {
+            "prompt": {
+                "displayName": {
+                    "en": "Prompt",
+                    "zh": "提示词"
+                },
+                "description": {
+                    "en": "Describe the styles, topics, and contents of lyrics you want to generate",
+                    "zh": "简短的描述你想要生成段落的风格、主题、内容等"
+                },
+                "defaultValue": "",
+                "widget": {
+                    "type": WidgetType.TextArea.value,
+                    "config": {
+                        "placeholder": {
+                            "zh": "样例：请在本段落描写梦想和希望",
+                            "en": "e.g. write a paragraph about dreams and hope"
+                        },
+                        "maxLength": 300
+                    }
+                },
+                "optional": True
+            },
             "temperature": {
                 "displayName": {
                     "en": "Creativity",
@@ -123,7 +145,7 @@ class LyricStructureCompletionPlugin(TuneflowPlugin):
         
         # The number of lines to generate within the paragraph
         num_lines = params["numLines"]
-          
+
         # Get the range of selected structure paragraph
         start_tick = structures[structure_index].get_tick()
         end_tick = song.get_last_tick() if structure_index == len(structures) - 1 else structures[structure_index + 1].get_tick()
@@ -146,7 +168,7 @@ class LyricStructureCompletionPlugin(TuneflowPlugin):
         )
         
         response = api.generate(
-            user_demands="",
+            user_demands=params["prompt"],
             temperature=params["temperature"],
             context_before=context_before,
             context_after=context_after,
@@ -157,7 +179,7 @@ class LyricStructureCompletionPlugin(TuneflowPlugin):
         lines = split_lyrics(response)
         if len(lines) < 1:
             raise Exception('No lyrics generated')
-          
+
         # Remove the original lyric lines within the paragraph
         for line_index in reversed(sorted(indices_within_range)):
             lyrics.remove_line_at_index(line_index)

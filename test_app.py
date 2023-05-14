@@ -1,11 +1,11 @@
-from lyric_generation import LyricsGenerationPlugin
+from lyric_generation import LyricGenerationPlugin
 from lyric_line_completion import LyricLineCompletionPlugin
 from tuneflow_devkit import Runner
 from pathlib import Path
 import uvicorn
 
 app = Runner(plugin_class_list=[
-                LyricsGenerationPlugin,
+                LyricGenerationPlugin,
                 LyricLineCompletionPlugin
             ],
             bundle_file_path=str(Path(__file__).parent.joinpath('bundle.json').absolute())).start(path_prefix='/lyrics-writer', config={})

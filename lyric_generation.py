@@ -10,7 +10,7 @@ from utils import DEFAULT_WORD_TICKS
 from utils import get_writing_language, split_lyrics
 
 
-class LyricsGenerationPlugin(TuneflowPlugin):
+class LyricGenerationPlugin(TuneflowPlugin):
     '''
     Write lyrics from scratch or continue writing based on the lyric context
     '''
@@ -67,13 +67,13 @@ class LyricsGenerationPlugin(TuneflowPlugin):
             },
             "numLines": {
                 "displayName": {
-                    "en": "Esimated Nubmer of Lines",
-                    "zh": "预计乐句数量"
+                    "en": "Max Nubmer of Lines",
+                    "zh": "乐句最大数量"
                 },
                 "defaultValue": 4,
                 "description": {
-                    "en": "The estimated of lines to generate or continue writing",
-                    "zh": "生成或续写乐句的大致数量"
+                    "en": "The max number of lines to generate or continue",
+                    "zh": "生成或续写乐句的最大数量"
                 },
                 "widget": {
                     "type": WidgetType.Slider.value,
@@ -155,20 +155,18 @@ class LyricsGenerationPlugin(TuneflowPlugin):
         lang = get_writing_language(lang, user_lang)
         
         trigger: TuneflowPluginTriggerData = params["trigger"]
-        
-        lyrics = Lyrics(song)
-        if empty:
-            lyrics.clear()
-        # Whether to continue writing rather than generate from scratch
-        from_scratch = len(lyrics) == 0
-            
+
         start_tick: int = 0
         end_tick: int = math.inf
+
+        lyrics = Lyrics(song)
+        # Whether to continue writing rather than generate from scratch
+        from_scratch = len(lyrics) == 0 or empty
         
         if trigger["type"] == "lyrics-generate":
             # Triggered by the global lyric editor
             # Continue from the last line or generate from scratch
-            start_tick = 0 if from_scratch else lyrics[len(lyrics)-1].get_start_tick()
+            start_tick = 0 if from_scratch else lyrics[len(lyrics)-1].get_end_tick()
         elif trigger["type"] == "context-track-content":
             # Triggered on a MIDI track
             track_id = trigger["entities"][0]["trackId"]
@@ -184,9 +182,8 @@ class LyricsGenerationPlugin(TuneflowPlugin):
             # Lyrics are generated within the range of visible notes
             start_tick = visible_notes[0].get_start_tick()
             end_tick = visible_notes[-1].get_end_tick()
-            if from_scratch:
-                # Continue writing from the last line within visible notes if there is one
-                start_tick = max(lyrics[len(lyrics)-1].get_start_tick(), start_tick)
+            if not from_scratch:
+                start_tick = max(lyrics[len(lyrics)-1].get_end_tick(), start_tick)
         else:
             raise Exception('Trigger type not supported')
 
@@ -206,7 +203,12 @@ class LyricsGenerationPlugin(TuneflowPlugin):
 
         # Parse the response and arrange lyric lines
         lines = split_lyrics(response)
+        if len(lines) == 0:
+            raise Exception('No lyrics generated')
         
+        if empty:
+            lyrics.clear()
+
         line_start_offset = start_tick
         for i, line in enumerate(lines):
             line_duration = DEFAULT_WORD_TICKS * len(line)

@@ -20,6 +20,28 @@ class LyricLineCompletionPlugin(TuneflowPlugin):
     @staticmethod
     def params(song: Song) -> Dict[str, ParamDescriptor]:
         return {
+            "prompt": {
+                "displayName": {
+                    "en": "Prompt",
+                    "zh": "提示词"
+                },
+                "description": {
+                    "en": "Describe the styles, topics, and contents of lyrics you want to generate",
+                    "zh": "简短的描述你想要生成乐句的风格、主题、内容等"
+                },
+                "defaultValue": "",
+                "widget": {
+                    "type": WidgetType.TextArea.value,
+                    "config": {
+                        "placeholder": {
+                            "zh": "样例：这句话的主题是梦想和希望",
+                            "en": "e.g. write a lyric line about dreams and hope"
+                        },
+                        "maxLength": 300
+                    }
+                },
+                "optional": True
+            },
             "temperature": {
                 "displayName": {
                     "en": "Creativity",
@@ -115,7 +137,7 @@ class LyricLineCompletionPlugin(TuneflowPlugin):
         )
 
         response = api.generate(
-            user_demands="",
+            user_demands=params["prompt"],
             temperature=params["temperature"],
             context_before=context_before,
             context_after=context_after,
