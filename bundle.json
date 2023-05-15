@@ -31,7 +31,12 @@
           }
         }
       ],
-      "categories": ["generate"]
+      "categories": ["generate"],
+      "icon": {
+        "0.5x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@0.5x.png",
+        "1x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@1x.png",
+        "2x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@2x.png"
+      }
     },
     {
       "providerId": "andantei",
@@ -58,7 +63,12 @@
           "type": "lyrics-structure"
         }
       ],
-      "categories": ["generate"]
+      "categories": ["generate"],
+      "icon": {
+        "0.5x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@0.5x.png",
+        "1x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@1x.png",
+        "2x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@2x.png"
+      }
     },
     {
       "providerId": "andantei",
@@ -85,7 +95,12 @@
           "type": "lyrics-line"
         }
       ],
-      "categories": ["generate"]
+      "categories": ["generate"],
+      "icon": {
+        "0.5x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@0.5x.png",
+        "1x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@1x.png",
+        "2x": "https://s.tuneflow.com/images/plugins/icons/gpt_lyrics/gpt_lyrics@2x.png"
+      }
     }
   ]
 }

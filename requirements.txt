@@ -1,3 +1,2 @@
 openai>=0.27.4
-tuneflow-devkit-py>=0.7.0
-tuneflow-py>=0.7.2
+tuneflow-devkit-py>=0.8.1

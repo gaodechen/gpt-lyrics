@@ -51,7 +51,7 @@ class TextDavinci(BaseAPI):
         str: The generated text completion as a string.
     '''
     def _get_prompts(self, user_demands: str, **kwargs) -> str:
-        return self.prompt.get_completion_prompt(user_demands, **kwargs)
+        return self.prompt.get_completion_prompt(user_demands, **kwargs) #type:ignore
 
     def _get_content(self, response) -> str:
         if not response or not hasattr(response, "choices") or not response.choices:
@@ -89,7 +89,7 @@ class ChatGPT(BaseAPI):
         str: The generated text completion as a string.
     '''
     def _get_prompts(self, user_demands: str, **kwargs) -> str:
-        return self.prompt.get_chat_prompt(user_demands, **kwargs)
+        return self.prompt.get_chat_prompt(user_demands=user_demands, **kwargs) #type:ignore
     
     def _get_content(self, response) -> str:
         if not response or not hasattr(response, "choices") or not response.choices:
