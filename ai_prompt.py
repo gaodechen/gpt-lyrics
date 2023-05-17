@@ -1,3 +1,6 @@
+from utils import DEFAULT_ERROR_MESSAGE
+
+
 class BasePrompt():
     '''
     A BasePrompt instance is used to generate API-specific prompts.
@@ -37,7 +40,7 @@ class LyricPrompt(BasePrompt):
     The expected output is a string that begins with the specified [start] token and concludes with the [end] token.
     '''
 
-    def __init__(self, lang="en", error_message="[error]"):
+    def __init__(self, lang="en", error_message=DEFAULT_ERROR_MESSAGE):
         '''
         Args:
             lang (str): The language of the prompt. Currently supports "zh" and "en".
@@ -63,23 +66,23 @@ class LyricPrompt(BasePrompt):
         requirements = {
             "zh": [
                 "我会为你提供一个要求列表，你需要严格遵循每一条要求生成歌词。列表中的每一条要求都以(R)开头。"
-                "(R) 请遵循如下歌词创作风格、内容等要求：{user_demands}。",
+                "(R) 请遵循如下歌词创作风格、内容的用户要求：{user_demands}。",
                 "(R) 使用中文创作歌词。",
                 "(R) 不要包含任何音乐段落和结构名，例如chorus或verse",
                 "(R) 仅输出新生成歌词的正文，每句歌词独立成行。",
                 "(R) 在新生成的歌词开始之前输出[start]，歌词结束后输出[end]。其中不要包含之前已有的歌词上下文。",
-                "(R) 若无法生成歌词，请输出{error_message}。"
-                "(R) 歌词行数在{num_lines}行左右。"
+                "(R) 歌词行数在{num_lines}行左右。",
+                "(R) 如果将要生成的歌词或用户要求中包含恐怖、色情、暴力、政治话题，请输出{error_message}。",
             ],
             "en": [
                 "I will provide you with a list of requirements, and you need to strictly generate lyrics according to each requirement. Each item on the list starts with (R).",
-                "(R) Follow the following description regarding lyric contents or styles: {user_demands}.",
+                "(R) Follow the following user requirements regarding lyric contents or styles: {user_demands}.",
                 "(R) Write lyrics in English.",
                 "(R) Do not mention or use any music structure names such as intro, chorus, verse.",
                 "(R) Just write the generated lines with each line being separate and distinct.",
                 "(R) Output [start] before the newly generated lyrics begin and [end] after the lyrics end. Do not include previous lyrics if there are any.",
-                "(R) If you cannot generate the lyrics, output {error_message}."
-                "(R) Please provide around {num_lines} lines of new lyrics."
+                "(R) Please provide around {num_lines} lines of new lyrics.",
+                "(R) If the lyrics to be generated or user requests contain topics of horror, pornography, violence, or politics, please output {error_message}.",
             ]
         }
         # Requirements for lyric continuation

@@ -70,7 +70,7 @@ class LyricGenerationPlugin(TuneflowPlugin):
                     "en": "Max Nubmer of Lines",
                     "zh": "乐句最大数量"
                 },
-                "defaultValue": 4,
+                "defaultValue": 8,
                 "description": {
                     "en": "The max number of lines to generate or continue",
                     "zh": "生成或续写乐句的最大数量"
@@ -172,7 +172,7 @@ class LyricGenerationPlugin(TuneflowPlugin):
             track_id = trigger["entities"][0]["trackId"]
             track = song.get_track_by_id(track_id=track_id)
             if track is None:
-                raise Exception('Track not found')
+                raise Exception("Track not found")
             visible_notes = sorted(
                 track.get_visible_notes(),
                 key=lambda note: note.get_start_tick()
@@ -185,7 +185,7 @@ class LyricGenerationPlugin(TuneflowPlugin):
             if not from_scratch:
                 start_tick = max(lyrics[len(lyrics)-1].get_end_tick(), start_tick)
         else:
-            raise Exception('Trigger type not supported')
+            raise Exception("Trigger type not supported")
 
         # Generate lyrics through OpenAI APIs
         api = get_engine_api(
@@ -193,18 +193,18 @@ class LyricGenerationPlugin(TuneflowPlugin):
             prompt=LyricPrompt(lang=lang)
         )
         
-        lyric_contents = '\n'.join([line.get_sentence() for line in lyrics])
+        context_before = '' if from_scratch else '\n'.join([line.get_sentence() for line in lyrics])
         response = api.generate(
             user_demands=params["prompt"],
             temperature=params["temperature"],
-            context_before=lyric_contents,
+            context_before=context_before,
             num_lines=num_lines,
         )
 
         # Parse the response and arrange lyric lines
         lines = split_lyrics(response)
         if len(lines) == 0:
-            raise Exception('No lyrics generated')
+            raise Exception("No lyrics generated")
         
         if empty:
             lyrics.clear()
@@ -212,7 +212,7 @@ class LyricGenerationPlugin(TuneflowPlugin):
         line_start_offset = start_tick
         for i, line in enumerate(lines):
             line_duration = DEFAULT_WORD_TICKS * len(line)
-            if i > num_lines or line_start_offset + line_duration > end_tick:
+            if i >= num_lines or line_start_offset + line_duration > end_tick:
                 break
             lyrics.create_line_from_string(
                 line, line_start_offset, line_start_offset + line_duration)

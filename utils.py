@@ -19,7 +19,7 @@ def get_writing_language(selected_lang: str, user_lang: str):
         user_lang = user_lang.split(
             '-')[0] if '-' in user_lang else user_lang
         if user_lang not in SUPPORTED_LANGUAGES:
-            user_lang = "en"
+            user_lang = 'en'
         return user_lang
     return selected_lang
 
@@ -28,6 +28,7 @@ STRUCTURE_NAMES = ['chorus', 'verse', 'intro', 'bridge', 'outro']
 # TODO: use dynamic word duration
 DEFAULT_WORD_TICKS = 200
 DEFAULT_LINE_TICKS = 2000
+DEFAULT_ERROR_MESSAGE = '[error]'
 
 
 def split_lyrics(lyrics: str) -> List[str]:
@@ -36,9 +37,13 @@ def split_lyrics(lyrics: str) -> List[str]:
     The output may include structural labels and non-lyrical content,
     which should be removed to ensure only the desired lyrics are retained.
     '''
-    start_index = lyrics.lower().find("[start]")
-    end_index = lyrics.lower().find("[end]")
-    lyrics = lyrics[start_index + len("[start]"):end_index]
+    if DEFAULT_ERROR_MESSAGE in lyrics:
+        raise ValueError('Lyrics generation failed')
+    start_index = lyrics.lower().find('[start]')
+    end_index = lyrics.lower().find('[end]')
+    if start_index < 0 or end_index < 0:
+        raise ValueError('Lyrics generation failed')
+    lyrics = lyrics[start_index + len('[start]'):end_index]
     
     pattern = r'[\n,.,!,?，。！？]'
     # Split the lyrics into lines and remove leading/trailing spaces
